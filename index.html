@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Line World</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="theme.js"></script>
+</head>
+<body>
+  <nav id="nav">
+    <a href="/" class="nav-logo">line.</a>
+    <div class="nav-right">
+    <div class="nav-links">
+      <a href="/" class="active">Home</a>
+      <a href="/about.html">About</a>
+      <a href="/work.html">Work</a>
+      <a href="/studio.html">Studio</a>
+      <a href="/lens.html">Lens</a>
+      <a href="/films.html">Films</a>
+      <a href="/contact.html">Contact</a>
+    </div>
+    <button class="theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+    </div>
+  </nav>
+
+  <main>
+    <!-- HERO: the stick figure draws itself, then waves -->
+    <section class="hero">
+      <div class="hero-text">
+        <h1 class="hero-title">
+          <span class="line" id="line1">Hello, I'm</span>
+          <span class="line accent" id="line2">Naman</span>
+        </h1>
+        <p class="hero-sub" id="hero-sub">Designer & Creative Technologist</p>
+      </div>
+
+      <div class="hero-figure">
+        <svg viewBox="-40 -170 240 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- stick figure saying hi -->
+          <g id="hero-character">
+            <!-- body -->
+            <path class="draw" id="d-body" d="
+              M -10 0 L -5 -30 L 0 -60 L 0 -120
+            " />
+            <!-- left leg -->
+            <path class="draw" id="d-leg-l" d="M 0 -60 L -20 0" />
+            <!-- right leg -->
+            <path class="draw" id="d-leg-r" d="M 0 -60 L 20 0" />
+            <!-- left arm (relaxed) -->
+            <path class="draw" id="d-arm-l" d="M 0 -110 C -15 -95, -25 -85, -35 -80" />
+            <!-- right arm (raised, waving) -->
+            <path class="draw" id="d-arm-r" d="M 0 -110 C 20 -120, 40 -140, 55 -155" />
+            <!-- hand with fingers -->
+            <g id="wave-group">
+              <path class="draw" id="d-hand" d="
+                M 55 -155 L 50 -170
+                M 55 -155 L 58 -172
+                M 55 -155 L 65 -168
+                M 55 -155 L 70 -162
+                M 55 -155 L 72 -153
+              " />
+            </g>
+            <!-- head -->
+            <circle class="draw" id="d-head" cx="0" cy="-140" r="20" />
+            <!-- eyes -->
+            <circle class="draw" id="d-eye-l" cx="-7" cy="-143" r="3" />
+            <circle class="draw" id="d-eye-r" cx="7" cy="-143" r="3" />
+            <!-- smile -->
+            <path class="draw" id="d-smile" d="M -8 -133 C -4 -127, 4 -127, 8 -133" />
+          </g>
+        </svg>
+      </div>
+
+      <div class="scroll-cue" id="scroll-cue">
+        <span>scroll to explore</span>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 4 L10 16 M5 11 L10 16 L15 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </section>
+
+    <!-- INTRO section with line-draw icons -->
+    <section class="intro" id="intro">
+      <div class="intro-grid">
+        <div class="intro-card" data-delay="0">
+          <svg class="intro-icon" viewBox="0 0 60 60">
+            <path class="draw-scroll" d="M10 50 L30 10 L50 50 M18 35 L42 35" />
+          </svg>
+          <h3>Design</h3>
+          <p>HCI-driven interfaces that feel intuitive</p>
+        </div>
+        <div class="intro-card" data-delay="150">
+          <svg class="intro-icon" viewBox="0 0 60 60">
+            <path class="draw-scroll" d="M15 15 L15 45 L45 45 M15 35 L25 25 L35 30 L45 15" />
+          </svg>
+          <h3>Build</h3>
+          <p>Code that moves — animation, interaction, XR</p>
+        </div>
+        <div class="intro-card" data-delay="300">
+          <svg class="intro-icon" viewBox="0 0 60 60">
+            <circle class="draw-scroll" cx="30" cy="28" r="14" />
+            <path class="draw-scroll" d="M22 46 C22 38, 38 38, 38 46" />
+          </svg>
+          <h3>Think</h3>
+          <p>Research-led process, human-centered outcomes</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+      <div class="cta-figure">
+        <svg viewBox="0 0 120 80" fill="none">
+          <path class="draw-scroll" d="M20 60 L40 20 L60 60 L80 20 L100 60" />
+        </svg>
+      </div>
+      <h2>Curious?</h2>
+      <a href="/about.html" class="cta-btn">Walk with me →</a>
+    </section>
+  </main>
+
+  <script>
+    /* ── Hero draw-on animation ── */
+    const schedule = [
+      { id: 'd-body',  dur: 1200, delay: 300 },
+      { id: 'd-leg-l', dur: 500,  delay: 600 },
+      { id: 'd-leg-r', dur: 500,  delay: 750 },
+      { id: 'd-arm-l', dur: 500,  delay: 900 },
+      { id: 'd-arm-r', dur: 600,  delay: 1050 },
+      { id: 'd-hand',  dur: 400,  delay: 1500 },
+      { id: 'd-head',  dur: 700,  delay: 1200 },
+      { id: 'd-eye-l', dur: 250,  delay: 1800 },
+      { id: 'd-eye-r', dur: 250,  delay: 1950 },
+      { id: 'd-smile', dur: 350,  delay: 2100 },
+    ];
+
+    const items = schedule.map(s => ({ ...s, el: document.getElementById(s.id) }));
+
+    // prep: hide all strokes
+    items.forEach(({ el }) => {
+      const len = el.getTotalLength();
+      el.style.strokeDasharray = len;
+      el.style.strokeDashoffset = len;
+    });
+
+    // play
+    requestAnimationFrame(() => {
+      items.forEach(({ el, dur, delay }) => {
+        setTimeout(() => {
+          el.style.transition = `stroke-dashoffset ${dur}ms cubic-bezier(0.16, 1, 0.3, 1)`;
+          el.style.strokeDashoffset = 0;
+        }, delay);
+      });
+
+      // wave after draw
+      const waveGroup = document.getElementById('wave-group');
+      setTimeout(() => {
+        waveGroup.style.transformOrigin = '55px -155px';
+        waveGroup.style.animation = 'wave 0.5s ease-in-out 3';
+      }, 2500);
+
+      // text reveal
+      setTimeout(() => document.getElementById('line1').classList.add('visible'), 400);
+      setTimeout(() => document.getElementById('line2').classList.add('visible'), 800);
+      setTimeout(() => document.getElementById('hero-sub').classList.add('visible'), 1400);
+    });
+
+    /* ── Scroll-triggered draw for sections below ── */
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+
+        // draw-scroll paths
+        el.querySelectorAll('.draw-scroll').forEach(path => {
+          const len = path.getTotalLength();
+          path.style.strokeDasharray = len;
+          path.style.strokeDashoffset = len;
+          const d = parseInt(el.dataset.delay || 0);
+          setTimeout(() => {
+            path.style.transition = 'stroke-dashoffset 1s cubic-bezier(0.16, 1, 0.3, 1)';
+            path.style.strokeDashoffset = 0;
+          }, d);
+        });
+
+        el.classList.add('in-view');
+        observer.unobserve(el);
+      });
+    }, { threshold: 0.3 });
+
+    document.querySelectorAll('.intro-card, .cta-section').forEach(el => observer.observe(el));
+
+    // hide scroll cue on scroll
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 80) document.getElementById('scroll-cue').classList.add('hidden');
+    }, { passive: true });
+  </script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Work — Line World</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="theme.js"></script>
+</head>
+<body>
+  <nav>
+    <a href="/" class="nav-logo">line.</a>
+    <div class="nav-right">
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/about.html">About</a>
+      <a href="/work.html" class="active">Work</a>
+      <a href="/studio.html">Studio</a>
+      <a href="/lens.html">Lens</a>
+      <a href="/films.html">Films</a>
+      <a href="/contact.html">Contact</a>
+    </div>
+    <button class="theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+    </div>
+  </nav>
+
+  <section class="work-hero">
+    <h1>Selected Work</h1>
+    <p>Projects where design meets engineering</p>
+  </section>
+
+  <div class="work-grid">
+    <a class="work-card" data-anim href="#">
+      <svg viewBox="0 0 80 80" fill="none">
+        <rect class="draw-scroll" x="10" y="10" width="60" height="60" rx="8" />
+        <path class="draw-scroll" d="M25 35 L35 45 L55 25" />
+      </svg>
+      <div>
+        <h3>SafeBite</h3>
+        <p>Allergen-aware food scanner with real-time ingredient analysis and personalized alerts.</p>
+        <span class="work-tag">React · Zustand · Vite</span>
+      </div>
+    </a>
+
+    <a class="work-card" data-anim href="#">
+      <svg viewBox="0 0 80 80" fill="none">
+        <circle class="draw-scroll" cx="40" cy="40" r="28" />
+        <path class="draw-scroll" d="M28 40 C28 28, 52 28, 52 40 C52 52, 28 52, 28 40" />
+      </svg>
+      <div>
+        <h3>XR Spatial</h3>
+        <p>Immersive spatial experiences blending physical and digital interaction.</p>
+        <span class="work-tag">Three.js · WebXR · GSAP</span>
+      </div>
+    </a>
+
+    <a class="work-card" data-anim href="#">
+      <svg viewBox="0 0 80 80" fill="none">
+        <path class="draw-scroll" d="M15 60 L40 20 L65 60 Z" />
+        <line class="draw-scroll" x1="40" y1="35" x2="40" y2="48" />
+        <circle class="draw-scroll" cx="40" cy="53" r="2" />
+      </svg>
+      <div>
+        <h3>Portfolio</h3>
+        <p>This site — built with Next.js 14, GSAP scroll animations, and a custom CMS.</p>
+        <span class="work-tag">Next.js · Tailwind · Vercel KV</span>
+      </div>
+    </a>
+
+    <a class="work-card" data-anim href="#">
+      <svg viewBox="0 0 80 80" fill="none">
+        <path class="draw-scroll" d="M20 55 C20 30, 35 15, 60 15" />
+        <path class="draw-scroll" d="M50 8 L60 15 L50 22" />
+        <path class="draw-scroll" d="M60 25 C60 50, 45 65, 20 65" />
+        <path class="draw-scroll" d="M30 72 L20 65 L30 58" />
+      </svg>
+      <div>
+        <h3>Motion Systems</h3>
+        <p>Reusable animation patterns and scroll-driven interactions for web interfaces.</p>
+        <span class="work-tag">GSAP · Framer Motion · CSS</span>
+      </div>
+    </a>
+  </div>
+
+  <script>
+    // draw-on-scroll for work cards
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        el.querySelectorAll('.draw-scroll').forEach(path => {
+          const len = path.getTotalLength();
+          path.style.strokeDasharray = len;
+          path.style.strokeDashoffset = len;
+          setTimeout(() => {
+            path.style.transition = 'stroke-dashoffset 1s cubic-bezier(0.16, 1, 0.3, 1)';
+            path.style.strokeDashoffset = 0;
+          }, 100);
+        });
+        el.classList.add('in-view');
+        obs.unobserve(el);
+      });
+    }, { threshold: 0.2 });
+
+    document.querySelectorAll('[data-anim]').forEach(el => obs.observe(el));
+  </script>
+</body>
+</html>

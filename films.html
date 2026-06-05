@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Films — Line World</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="theme.js"></script>
+  <style>
+    .films-page { padding-top: 5rem; overflow-x: hidden; }
+
+    /* ── Projector figure ── */
+    .projector-wrap {
+      display: flex;
+      justify-content: center;
+      padding: 3rem 0 1rem;
+      position: relative;
+    }
+    .projector-wrap svg { width: 280px; height: auto; }
+
+    /* projector light beam */
+    .beam {
+      fill: none;
+      stroke: var(--amber);
+      stroke-width: 1;
+      opacity: 0;
+      filter: blur(1px);
+    }
+    .beam.on {
+      opacity: 0.25;
+      animation: flicker 3s ease-in-out infinite;
+    }
+    @keyframes flicker {
+      0%, 100% { opacity: 0.25; }
+      30%  { opacity: 0.18; }
+      50%  { opacity: 0.3; }
+      70%  { opacity: 0.2; }
+    }
+
+    /* film reel spin */
+    .reel {
+      transform-origin: center;
+    }
+    .reel.spin {
+      animation: reel-spin 4s linear infinite;
+    }
+    @keyframes reel-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── Hero ── */
+    .films-hero {
+      text-align: center;
+      padding: 2rem 2rem 3rem;
+    }
+    .films-hero .label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--amber);
+      margin-bottom: 0.6rem;
+    }
+    .films-hero h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.8rem;
+    }
+    .films-hero p {
+      color: var(--dust);
+      font-size: 1.05rem;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ── Film strip / horizontal scroll ── */
+    .filmstrip-section {
+      padding: 2rem 0 3rem;
+    }
+
+    .filmstrip-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--amber);
+      padding: 0 3rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .filmstrip {
+      display: flex;
+      gap: 2rem;
+      padding: 0 3rem;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .filmstrip::-webkit-scrollbar { display: none; }
+
+    /* ── Film card ── */
+    .film-card {
+      flex: 0 0 auto;
+      width: 360px;
+      scroll-snap-align: start;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(237,232,208,0.06);
+      background: var(--graphite);
+      transition: transform 0.5s var(--ease-cinema), border-color 0.3s;
+    }
+    .film-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(237,232,208,0.15);
+    }
+
+    .film-thumb {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      background: #111;
+    }
+    .film-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s var(--ease-cinema);
+    }
+    .film-card:hover .film-thumb img {
+      transform: scale(1.05);
+    }
+
+    /* play button overlay */
+    .play-btn {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(0,0,0,0.3);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .film-card:hover .play-btn { opacity: 1; }
+    .play-btn svg {
+      width: 48px;
+      height: 48px;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+    }
+
+    /* film perforations on sides */
+    .film-thumb::before,
+    .film-thumb::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      width: 12px;
+      height: 100%;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 8px,
+        rgba(237,232,208,0.06) 8px,
+        rgba(237,232,208,0.06) 14px,
+        transparent 14px,
+        transparent 22px
+      );
+      z-index: 2;
+    }
+    .film-thumb::before { left: 0; }
+    .film-thumb::after  { right: 0; }
+
+    .film-info {
+      padding: 1.2rem 1.4rem;
+    }
+    .film-info h3 {
+      font-size: 1.05rem;
+      font-weight: 500;
+      margin-bottom: 0.3rem;
+    }
+    .film-info p {
+      font-size: 0.85rem;
+      color: var(--dust);
+      line-height: 1.5;
+      margin-bottom: 0.6rem;
+    }
+    .film-meta {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.75rem;
+      color: var(--amber);
+    }
+
+    /* ── Scroll arrows ── */
+    .scroll-arrows {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      padding: 1.5rem 0;
+    }
+    .scroll-arrow {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid rgba(237,232,208,0.12);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      background: none;
+      color: var(--bone);
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .scroll-arrow:hover {
+      border-color: var(--amber);
+      background: rgba(214,169,95,0.1);
+    }
+
+    /* ── Bottom CTA ── */
+    .films-cta {
+      text-align: center;
+      padding: 3rem 2rem 6rem;
+    }
+    .films-cta p {
+      color: var(--dust);
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 640px) {
+      .film-card { width: 300px; }
+      .filmstrip { padding: 0 1.5rem; gap: 1.2rem; }
+      .projector-wrap svg { width: 220px; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/" class="nav-logo">line.</a>
+    <div class="nav-right">
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/about.html">About</a>
+      <a href="/work.html">Work</a>
+      <a href="/studio.html">Studio</a>
+      <a href="/lens.html">Lens</a>
+      <a href="/films.html" class="active">Films</a>
+      <a href="/contact.html">Contact</a>
+    </div>
+    <button class="theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+    </div>
+  </nav>
+
+  <main class="films-page">
+    <!-- Line-drawn film projector -->
+    <div class="projector-wrap">
+      <svg viewBox="0 0 280 160" fill="none">
+        <!-- projector body -->
+        <rect class="draw" id="p-body" x="80" y="70" width="100" height="55" rx="6" />
+        <!-- lens tube -->
+        <path class="draw" id="p-lens" d="M180 85 L220 80 L220 100 L180 95" />
+        <!-- lens glass -->
+        <circle class="draw" id="p-glass" cx="225" cy="90" r="8" />
+
+        <!-- top reel (large) -->
+        <g class="reel" id="reel-top" style="transform-origin: 110px 48px;">
+          <circle class="draw" id="p-reel1" cx="110" cy="48" r="22" />
+          <circle class="draw" id="p-reel1-inner" cx="110" cy="48" r="8" />
+          <!-- spokes -->
+          <line class="draw" id="p-spoke1" x1="110" y1="26" x2="110" y2="70" />
+          <line class="draw" id="p-spoke2" x1="89" y1="36" x2="131" y2="60" />
+          <line class="draw" id="p-spoke3" x1="89" y1="60" x2="131" y2="36" />
+        </g>
+
+        <!-- small reel -->
+        <g class="reel" id="reel-small" style="transform-origin: 160px 55px;">
+          <circle class="draw" id="p-reel2" cx="160" cy="55" r="15" />
+          <circle class="draw" id="p-reel2-inner" cx="160" cy="55" r="5" />
+          <line class="draw" id="p-spoke4" x1="160" y1="40" x2="160" y2="70" />
+          <line class="draw" id="p-spoke5" x1="147" y1="48" x2="173" y2="62" />
+        </g>
+
+        <!-- film strip connecting reels -->
+        <path class="draw" id="p-film" d="M132 48 C140 42, 145 45, 145 55 M110 70 C110 80, 120 75, 130 72" style="stroke: var(--amber);" />
+
+        <!-- legs -->
+        <path class="draw" id="p-legs" d="M95 125 L90 145 M165 125 L170 145 M130 125 L130 148" />
+
+        <!-- light beam (triangle) -->
+        <path class="beam" id="p-beam" d="M233 90 L270 60 L270 120 Z" />
+
+        <!-- base -->
+        <path class="draw" id="p-base" d="M80 125 L180 125" />
+      </svg>
+    </div>
+
+    <section class="films-hero">
+      <div class="label">Filmmaking</div>
+      <h1>My Films</h1>
+      <p>Short films, motion pieces, and visual experiments — stories told through moving images.</p>
+    </section>
+
+    <!-- Film strip 1: Featured -->
+    <section class="filmstrip-section">
+      <div class="filmstrip-label">Featured</div>
+      <div class="filmstrip" id="strip1">
+        <div class="film-card">
+          <div class="film-thumb">
+            <img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=700&q=80" alt="Film 1" loading="lazy" />
+            <div class="play-btn">
+              <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" stroke="white" stroke-width="2"/><path d="M19 15 L35 24 L19 33 Z" fill="white"/></svg>
+            </div>
+          </div>
+          <div class="film-info">
+            <h3>The In-Between</h3>
+            <p>A short film about the liminal spaces we pass through every day without noticing.</p>
+            <div class="film-meta"><span>3:42</span><span>Short Film</span><span>2024</span></div>
+          </div>
+        </div>
+
+        <div class="film-card">
+          <div class="film-thumb">
+            <img src="https://images.unsplash.com/photo-1485846234645-a62644f84728?w=700&q=80" alt="Film 2" loading="lazy" />
+            <div class="play-btn">
+              <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" stroke="white" stroke-width="2"/><path d="M19 15 L35 24 L19 33 Z" fill="white"/></svg>
+            </div>
+          </div>
+          <div class="film-info">
+            <h3>Render Loop</h3>
+            <p>An experimental piece blending code-generated visuals with hand-shot 16mm footage.</p>
+            <div class="film-meta"><span>5:18</span><span>Experimental</span><span>2024</span></div>
+          </div>
+        </div>
+
+        <div class="film-card">
+          <div class="film-thumb">
+            <img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=700&q=80" alt="Film 3" loading="lazy" />
+            <div class="play-btn">
+              <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" stroke="white" stroke-width="2"/><path d="M19 15 L35 24 L19 33 Z" fill="white"/></svg>
+            </div>
+          </div>
+          <div class="film-info">
+            <h3>Quiet Architecture</h3>
+            <p>Documenting the silent beauty of brutalist buildings at dawn, before the city wakes.</p>
+            <div class="film-meta"><span>4:55</span><span>Documentary</span><span>2023</span></div>
+          </div>
+        </div>
+
+        <div class="film-card">
+          <div class="film-thumb">
+            <img src="https://images.unsplash.com/photo-1524712245354-2c4e5e7121c0?w=700&q=80" alt="Film 4" loading="lazy" />
+            <div class="play-btn">
+              <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" stroke="white" stroke-width="2"/><path d="M19 15 L35 24 L19 33 Z" fill="white"/></svg>
+            </div>
+          </div>
+          <div class="film-info">
+            <h3>Digital Skin</h3>
+            <p>An XR film exploring the boundary between physical touch and virtual sensation.</p>
+            <div class="film-meta"><span>7:30</span><span>XR Film</span><span>2024</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="scroll-arrows">
+        <button class="scroll-arrow" data-dir="-1" data-target="strip1">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 4 L6 8 L10 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <button class="scroll-arrow" data-dir="1" data-target="strip1">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4 L10 8 L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- Film strip 2: Motion Pieces -->
+    <section class="filmstrip-section">
+      <div class="filmstrip-label">Motion Pieces</div>
+      <div class="filmstrip" id="strip2">
+        <div class="film-card">
+          <div class="film-thumb">
+            <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=700&q=80" alt="Motion 1" loading="lazy" />
+            <div class="play-btn">
+              <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" stroke="white" stroke-width="2"/><path d="M19 15 L35 24 L19 33 Z" fill="white"/></svg>
+            </div>
+          </div>
+          <div class="film-info">
+            <h3>Pixel Drift</h3>
+            <p>Generative typography dissolving and reforming in real-time — captured as a loop.</p>
+            <div class="film-meta"><span>0:45</span><span>Motion Loop</span><span>2024</span></div>
+          </div>
+        </div>
+
+        <div class="film-card">
+          <div class="film-thumb">
+            <img src="https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=700&q=80" alt="Motion 2" loading="lazy" />
+            <div class="play-btn">
+              <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" stroke="white" stroke-width="2"/><path d="M19 15 L35 24 L19 33 Z" fill="white"/></svg>
+            </div>
+          </div>
+          <div class="film-info">
+            <h3>Fluid Forms</h3>
+            <p>Abstract 3D shapes reacting to audio frequencies — a visual music experiment.</p>
+            <div class="film-meta"><span>1:20</span><span>Audio Visual</span><span>2023</span></div>
+          </div>
+        </div>
+
+        <div class="film-card">
+          <div class="film-thumb">
+            <img src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=700&q=80" alt="Motion 3" loading="lazy" />
+            <div class="play-btn">
+              <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" stroke="white" stroke-width="2"/><path d="M19 15 L35 24 L19 33 Z" fill="white"/></svg>
+            </div>
+          </div>
+          <div class="film-info">
+            <h3>Frame by Frame</h3>
+            <p>A stop-motion study of everyday objects coming alive after midnight.</p>
+            <div class="film-meta"><span>2:10</span><span>Stop Motion</span><span>2023</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="scroll-arrows">
+        <button class="scroll-arrow" data-dir="-1" data-target="strip2">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 4 L6 8 L10 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <button class="scroll-arrow" data-dir="1" data-target="strip2">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4 L10 8 L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <div class="films-cta">
+      <p>Want to collaborate on a film or motion project?</p>
+      <a href="/contact.html" class="cta-btn">Get in touch →</a>
+    </div>
+  </main>
+
+  <script>
+    /* ── Draw projector on load ── */
+    const parts = [
+      { id: 'p-body',       dur: 800,  delay: 200 },
+      { id: 'p-lens',       dur: 500,  delay: 500 },
+      { id: 'p-glass',      dur: 400,  delay: 700 },
+      { id: 'p-reel1',      dur: 600,  delay: 300 },
+      { id: 'p-reel1-inner',dur: 300,  delay: 600 },
+      { id: 'p-spoke1',     dur: 200,  delay: 700 },
+      { id: 'p-spoke2',     dur: 200,  delay: 750 },
+      { id: 'p-spoke3',     dur: 200,  delay: 800 },
+      { id: 'p-reel2',      dur: 500,  delay: 400 },
+      { id: 'p-reel2-inner',dur: 300,  delay: 650 },
+      { id: 'p-spoke4',     dur: 200,  delay: 750 },
+      { id: 'p-spoke5',     dur: 200,  delay: 800 },
+      { id: 'p-film',       dur: 600,  delay: 900 },
+      { id: 'p-legs',       dur: 400,  delay: 600 },
+      { id: 'p-base',       dur: 400,  delay: 500 },
+    ];
+
+    parts.forEach(({ id }) => {
+      const el = document.getElementById(id);
+      const len = el.getTotalLength();
+      el.style.strokeDasharray = len;
+      el.style.strokeDashoffset = len;
+    });
+
+    requestAnimationFrame(() => {
+      parts.forEach(({ id, dur, delay }) => {
+        setTimeout(() => {
+          const el = document.getElementById(id);
+          el.style.transition = `stroke-dashoffset ${dur}ms cubic-bezier(0.16, 1, 0.3, 1)`;
+          el.style.strokeDashoffset = 0;
+        }, delay);
+      });
+
+      // after projector draws: spin reels + turn on beam
+      setTimeout(() => {
+        document.getElementById('reel-top').classList.add('spin');
+        document.getElementById('reel-small').classList.add('spin');
+        document.getElementById('p-beam').classList.add('on');
+      }, 1400);
+    });
+
+    /* ── Scroll arrows ── */
+    document.querySelectorAll('.scroll-arrow').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const track = document.getElementById(btn.dataset.target);
+        const dir = parseInt(btn.dataset.dir);
+        track.scrollBy({ left: dir * 380, behavior: 'smooth' });
+      });
+    });
+  </script>
+</body>
+</html>

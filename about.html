@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About — Line World</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="theme.js"></script>
+  <style>
+    /* ── About-specific: walking scene ── */
+    .walk-controls {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 0.5rem;
+      z-index: 50;
+      opacity: 0;
+      transition: opacity 0.6s var(--ease-cinema);
+    }
+    .walk-controls.visible { opacity: 1; }
+
+    .speed-btn {
+      font: inherit;
+      font-size: 0.8rem;
+      color: var(--dust);
+      background: rgba(22, 22, 22, 0.8);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(237, 232, 208, 0.1);
+      padding: 0.5rem 1.2rem;
+      border-radius: 100px;
+      cursor: pointer;
+      transition: all 0.3s var(--ease-cinema);
+    }
+    .speed-btn:hover { color: var(--bone); border-color: rgba(237, 232, 208, 0.25); }
+    .speed-btn.active {
+      color: var(--ink);
+      background: var(--amber);
+      border-color: var(--amber);
+    }
+
+    /* walk figure — stays at bottom center, fixed */
+    .walk-scene {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 120px;
+      z-index: 5;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .walk-ground {
+      position: absolute;
+      bottom: 50px;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: rgba(237, 232, 208, 0.1);
+    }
+
+    .walk-dots {
+      position: absolute;
+      bottom: 46px;
+      left: 0;
+      width: 300%;
+      height: 4px;
+    }
+    .walk-dots .dot {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      background: rgba(237, 232, 208, 0.06);
+      border-radius: 50%;
+    }
+
+    .walk-figure {
+      position: absolute;
+      bottom: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      transition: transform 0.3s;
+    }
+
+    /* limb styles */
+    .wk { fill: none; stroke: var(--bone); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    .wk-head { fill: none; stroke: var(--bone); stroke-width: 3; }
+    .wk-eye  { fill: var(--bone); stroke: none; }
+    .wk-foot { stroke: var(--bone); stroke-width: 3; fill: none; stroke-linecap: round; }
+
+    /* all animations start paused */
+    .bob, .l-l, .l-r, .s-l, .s-r, .a-l, .a-r, .f-l, .f-r {
+      animation-play-state: paused;
+    }
+
+    .bob   { animation: body-bob   var(--cycle-half) ease-in-out infinite; }
+    .l-l   { animation: leg-l      var(--cycle) ease-in-out infinite; transform-origin: 0 0; }
+    .l-r   { animation: leg-r      var(--cycle) ease-in-out infinite; transform-origin: 0 0; }
+    .s-l   { animation: shin-l     var(--cycle) ease-in-out infinite; transform-origin: 0 0; }
+    .s-r   { animation: shin-r     var(--cycle) ease-in-out infinite; transform-origin: 0 0; }
+    .a-l   { animation: arm-l      var(--cycle) ease-in-out infinite; transform-origin: 0 0; }
+    .a-r   { animation: arm-r      var(--cycle) ease-in-out infinite; transform-origin: 0 0; }
+    .f-l   { animation: forearm-l  var(--cycle) ease-in-out infinite; transform-origin: 0 0; }
+    .f-r   { animation: forearm-r  var(--cycle) ease-in-out infinite; transform-origin: 0 0; }
+
+    /* speed-dependent durations (set via JS) */
+    :root {
+      --cycle: 1s;
+      --cycle-half: 0.5s;
+    }
+
+    /* about content needs bottom padding for the fixed walker */
+    .about-content {
+      padding-bottom: 140px;
+    }
+
+    /* fade gradient above the walking scene */
+    .walk-fade {
+      position: fixed;
+      bottom: 100px;
+      left: 0;
+      width: 100%;
+      height: 40px;
+      background: linear-gradient(transparent, var(--ink));
+      z-index: 4;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body style="height: 500vh;">
+  <nav>
+    <a href="/" class="nav-logo">line.</a>
+    <div class="nav-right">
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/about.html" class="active">About</a>
+      <a href="/work.html">Work</a>
+      <a href="/studio.html">Studio</a>
+      <a href="/lens.html">Lens</a>
+      <a href="/films.html">Films</a>
+      <a href="/contact.html">Contact</a>
+    </div>
+    <button class="theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+    </div>
+  </nav>
+
+  <!-- walking figure fixed at the bottom -->
+  <div class="walk-fade"></div>
+  <div class="walk-scene" id="walk-scene">
+    <div class="walk-ground"></div>
+    <div class="walk-dots" id="walk-dots"></div>
+    <div class="walk-figure" id="walk-figure">
+      <svg width="70" height="140" viewBox="-35 -140 70 140">
+        <g class="bob">
+          <!-- torso -->
+          <line class="wk" x1="0" y1="-52" x2="0" y2="-105" />
+
+          <!-- head -->
+          <circle class="wk-head" cx="0" cy="-122" r="17" />
+          <!-- eyes -->
+          <circle class="wk-eye" cx="5" cy="-125" r="2.2" />
+          <circle class="wk-eye" cx="13" cy="-125" r="2.2" />
+          <!-- smile -->
+          <path class="wk" d="M 5 -116 C 7 -112, 12 -112, 14 -116" stroke-width="2" />
+
+          <!-- LEFT LEG -->
+          <g transform="translate(0, -52)">
+            <g class="l-l">
+              <line class="wk" x1="0" y1="0" x2="0" y2="26" />
+              <g transform="translate(0, 26)">
+                <g class="s-l">
+                  <line class="wk" x1="0" y1="0" x2="0" y2="24" />
+                  <line class="wk-foot" x1="0" y1="24" x2="7" y2="26" />
+                </g>
+              </g>
+            </g>
+          </g>
+
+          <!-- RIGHT LEG -->
+          <g transform="translate(0, -52)">
+            <g class="l-r">
+              <line class="wk" x1="0" y1="0" x2="0" y2="26" />
+              <g transform="translate(0, 26)">
+                <g class="s-r">
+                  <line class="wk" x1="0" y1="0" x2="0" y2="24" />
+                  <line class="wk-foot" x1="0" y1="24" x2="7" y2="26" />
+                </g>
+              </g>
+            </g>
+          </g>
+
+          <!-- LEFT ARM -->
+          <g transform="translate(0, -100)">
+            <g class="a-l">
+              <line class="wk" x1="0" y1="0" x2="0" y2="19" />
+              <g transform="translate(0, 19)">
+                <g class="f-l">
+                  <line class="wk" x1="0" y1="0" x2="0" y2="17" />
+                </g>
+              </g>
+            </g>
+          </g>
+
+          <!-- RIGHT ARM -->
+          <g transform="translate(0, -100)">
+            <g class="a-r">
+              <line class="wk" x1="0" y1="0" x2="0" y2="19" />
+              <g transform="translate(0, 19)">
+                <g class="f-r">
+                  <line class="wk" x1="0" y1="0" x2="0" y2="17" />
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <!-- speed controls -->
+  <div class="walk-controls" id="walk-controls">
+    <button class="speed-btn" data-speed="stroll">Stroll</button>
+    <button class="speed-btn active" data-speed="walk">Walk</button>
+    <button class="speed-btn" data-speed="run">Run</button>
+  </div>
+
+  <!-- scrollable content -->
+  <div class="about-content">
+    <section class="about-hero">
+      <h1>About Me</h1>
+      <p>Scroll down — I'll walk with you through my story.</p>
+      <div class="scroll-cue" id="scroll-cue">
+        <span>scroll</span>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 4 L10 16 M5 11 L10 16 L15 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </section>
+
+    <section class="about-section">
+      <div class="about-block" data-anim>
+        <div class="label">Background</div>
+        <h2>I'm Naman Mehra</h2>
+        <p>An HCI Designer & Creative Technologist based in London, with an MSc in Human-Computer Interaction from UCA. I work at the intersection of design and engineering — where interfaces feel alive.</p>
+        <p>I believe the best digital experiences are the ones that disappear — when the tool gets out of the way and the human just flows.</p>
+      </div>
+    </section>
+
+    <section class="about-section">
+      <div class="about-block" data-anim>
+        <div class="label">What I Do</div>
+        <h2>Design + Code + Motion</h2>
+        <p>I design interfaces grounded in research, then build them with code. Animation isn't decoration — it's communication. Every transition, every micro-interaction carries meaning.</p>
+        <div class="tags">
+          <span class="tag">UI/UX Design</span>
+          <span class="tag">Creative Coding</span>
+          <span class="tag">Motion Design</span>
+          <span class="tag">XR/Spatial</span>
+          <span class="tag">Prototyping</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="about-section">
+      <div class="about-block" data-anim>
+        <div class="label">Tools</div>
+        <h2>How I Build</h2>
+        <p>Next.js, React, Tailwind, GSAP, Framer Motion, Three.js, Figma, Blender — whatever the project needs. I pick the tool that serves the idea, not the other way around.</p>
+        <div class="tags">
+          <span class="tag">Next.js</span>
+          <span class="tag">React</span>
+          <span class="tag">GSAP</span>
+          <span class="tag">Three.js</span>
+          <span class="tag">Figma</span>
+          <span class="tag">Tailwind</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="about-section">
+      <div class="about-block" data-anim>
+        <div class="label">Philosophy</div>
+        <h2>Less Text, More Feel</h2>
+        <p>If a section can be understood without a label, remove the label. Let layout, spacing, and motion do the talking. Apple-level restraint — smooth, purposeful, inevitable.</p>
+        <a href="/contact.html" class="cta-btn" style="margin-top: 1.5rem;">Let's talk →</a>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    /* ── Ground dots ── */
+    const dotsEl = document.getElementById('walk-dots');
+    for (let i = 0; i < 120; i++) {
+      const d = document.createElement('div');
+      d.className = 'dot';
+      d.style.left = (i * 1.5) + '%';
+      d.style.opacity = 0.2 + Math.random() * 0.8;
+      dotsEl.appendChild(d);
+    }
+
+    /* ── Limb elements ── */
+    const limbs = document.querySelectorAll('.bob, .l-l, .l-r, .s-l, .s-r, .a-l, .a-r, .f-l, .f-r');
+    const controls = document.getElementById('walk-controls');
+    const cue = document.getElementById('scroll-cue');
+
+    /* ── Speed settings ── */
+    const speeds = {
+      stroll: { cycle: '1.4s', half: '0.7s' },
+      walk:   { cycle: '1s',   half: '0.5s' },
+      run:    { cycle: '0.4s', half: '0.2s' },
+    };
+
+    let currentSpeed = 'walk';
+
+    function setSpeed(speed) {
+      currentSpeed = speed;
+      const s = speeds[speed];
+      document.documentElement.style.setProperty('--cycle', s.cycle);
+      document.documentElement.style.setProperty('--cycle-half', s.half);
+      document.querySelectorAll('.speed-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.speed === speed);
+      });
+    }
+
+    document.querySelectorAll('.speed-btn').forEach(btn => {
+      btn.addEventListener('click', () => setSpeed(btn.dataset.speed));
+    });
+
+    /* ── Walk on scroll ── */
+    let isWalking = false;
+    let stopTimer;
+    let lastScrollY = 0;
+
+    function startWalk() {
+      if (isWalking) return;
+      isWalking = true;
+      limbs.forEach(el => el.style.animationPlayState = 'running');
+    }
+
+    function stopWalk() {
+      isWalking = false;
+      limbs.forEach(el => el.style.animationPlayState = 'paused');
+    }
+
+    window.addEventListener('scroll', () => {
+      const scrollY = window.scrollY;
+      const maxScroll = document.body.scrollHeight - window.innerHeight;
+      const pct = scrollY / maxScroll;
+
+      // ground parallax
+      dotsEl.style.transform = `translateX(${-pct * 150}%)`;
+
+      // show controls + hide cue after first scroll
+      if (scrollY > 40) {
+        cue.classList.add('hidden');
+        controls.classList.add('visible');
+      }
+
+      // walk while scrolling
+      startWalk();
+      clearTimeout(stopTimer);
+      stopTimer = setTimeout(stopWalk, 150);
+
+      // auto-speed: scroll faster → character runs
+      const delta = Math.abs(scrollY - lastScrollY);
+      if (delta > 60) setSpeed('run');
+      else if (delta > 20) setSpeed('walk');
+      else setSpeed('stroll');
+      lastScrollY = scrollY;
+    }, { passive: true });
+
+    /* ── Reveal about blocks on scroll ── */
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.3 });
+
+    document.querySelectorAll('[data-anim]').forEach(el => obs.observe(el));
+
+    /* ── Init speed ── */
+    setSpeed('walk');
+  </script>
+</body>
+</html>

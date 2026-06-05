@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Through My Lens — Line World</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="theme.js"></script>
+  <style>
+    .lens-page { padding-top: 5rem; overflow-x: hidden; }
+
+    /* ── Hero ── */
+    .lens-hero {
+      text-align: center;
+      padding: 4rem 2rem 2rem;
+    }
+    .lens-hero .label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--amber);
+      margin-bottom: 0.6rem;
+    }
+    .lens-hero h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.8rem;
+    }
+    .lens-hero p {
+      color: var(--dust);
+      font-size: 1.05rem;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ── Line-drawn camera ── */
+    .camera-figure {
+      display: flex;
+      justify-content: center;
+      padding: 1rem 0 2rem;
+    }
+    .camera-figure svg { width: 160px; height: auto; }
+
+    /* ── Horizontal scroll gallery ── */
+    .gallery-section {
+      padding: 2rem 0 4rem;
+    }
+    .gallery-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--amber);
+      padding: 0 3rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .gallery-track {
+      display: flex;
+      gap: 1.5rem;
+      padding: 0 3rem;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      cursor: grab;
+    }
+    .gallery-track:active { cursor: grabbing; }
+    .gallery-track::-webkit-scrollbar { display: none; }
+
+    .gallery-item {
+      flex: 0 0 auto;
+      scroll-snap-align: start;
+      position: relative;
+      overflow: hidden;
+      border-radius: 20px;
+      transition: transform 0.5s var(--ease-cinema), box-shadow 0.5s;
+    }
+    .gallery-item:hover {
+      transform: scale(1.03);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+
+    .gallery-item img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* different sizes for visual rhythm */
+    .gallery-item.tall   { width: 280px; height: 400px; }
+    .gallery-item.wide   { width: 420px; height: 300px; }
+    .gallery-item.square { width: 320px; height: 320px; }
+
+    /* caption overlay */
+    .gallery-item .caption {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 2rem 1.2rem 1.2rem;
+      background: linear-gradient(transparent, rgba(0,0,0,0.7));
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.4s, transform 0.4s var(--ease-cinema);
+    }
+    .gallery-item:hover .caption {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .caption h3 {
+      font-size: 0.95rem;
+      font-weight: 500;
+      margin-bottom: 0.2rem;
+    }
+    .caption span {
+      font-size: 0.78rem;
+      color: var(--dust);
+    }
+
+    /* scroll hint arrows */
+    .scroll-arrows {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      padding: 1.5rem 0;
+    }
+    .scroll-arrow {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid rgba(237,232,208,0.12);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      background: none;
+      color: var(--bone);
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .scroll-arrow:hover {
+      border-color: var(--amber);
+      background: rgba(214,169,95,0.1);
+    }
+
+    /* ── Second gallery row ── */
+    .gallery-section + .gallery-section { padding-top: 0; }
+
+    /* ── Bottom quote ── */
+    .lens-quote {
+      text-align: center;
+      padding: 4rem 2rem 6rem;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .lens-quote blockquote {
+      font-size: 1.3rem;
+      font-style: italic;
+      font-weight: 300;
+      line-height: 1.5;
+      color: var(--bone);
+      margin-bottom: 0.8rem;
+    }
+    .lens-quote cite {
+      font-size: 0.85rem;
+      color: var(--dust);
+      font-style: normal;
+    }
+
+    @media (max-width: 640px) {
+      .gallery-item.tall   { width: 220px; height: 320px; }
+      .gallery-item.wide   { width: 320px; height: 240px; }
+      .gallery-item.square { width: 260px; height: 260px; }
+      .gallery-track { padding: 0 1.5rem; gap: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/" class="nav-logo">line.</a>
+    <div class="nav-right">
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/about.html">About</a>
+      <a href="/work.html">Work</a>
+      <a href="/studio.html">Studio</a>
+      <a href="/lens.html" class="active">Lens</a>
+      <a href="/films.html">Films</a>
+      <a href="/contact.html">Contact</a>
+    </div>
+    <button class="theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+    </div>
+  </nav>
+
+  <main class="lens-page">
+    <!-- line-drawn camera -->
+    <div class="camera-figure">
+      <svg viewBox="0 0 160 100" fill="none">
+        <!-- camera body -->
+        <rect class="draw" id="cam-body" x="30" y="30" width="100" height="60" rx="8" />
+        <!-- lens -->
+        <circle class="draw" id="cam-lens" cx="80" cy="60" r="20" />
+        <circle class="draw" id="cam-inner" cx="80" cy="60" r="10" />
+        <!-- viewfinder -->
+        <rect class="draw" id="cam-vf" x="60" y="18" width="25" height="14" rx="3" />
+        <!-- flash -->
+        <path class="draw" id="cam-flash" d="M110 30 L110 20 L125 20 L125 30" />
+        <!-- shutter button -->
+        <circle class="draw" id="cam-btn" cx="50" cy="28" r="5" />
+        <!-- strap -->
+        <path class="draw" id="cam-strap" d="M30 40 C15 35, 10 50, 15 60 M130 40 C145 35, 150 50, 145 60" style="stroke: var(--amber);" />
+      </svg>
+    </div>
+
+    <section class="lens-hero">
+      <div class="label">Photography</div>
+      <h1>Through My Lens</h1>
+      <p>Moments I've captured — textures, light, quiet corners of the world.</p>
+    </section>
+
+    <!-- Gallery Row 1: Street / Urban -->
+    <section class="gallery-section">
+      <div class="gallery-label">Streets & Urban</div>
+      <div class="gallery-track" id="gallery1">
+        <div class="gallery-item tall">
+          <img src="https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=600&q=80" alt="City alley" loading="lazy" />
+          <div class="caption"><h3>Narrow Light</h3><span>London, 2024</span></div>
+        </div>
+        <div class="gallery-item wide">
+          <img src="https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800&q=80" alt="Skyline" loading="lazy" />
+          <div class="caption"><h3>Golden Hour</h3><span>Skyline</span></div>
+        </div>
+        <div class="gallery-item square">
+          <img src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=600&q=80" alt="Urban texture" loading="lazy" />
+          <div class="caption"><h3>Concrete & Glass</h3><span>Reflections</span></div>
+        </div>
+        <div class="gallery-item tall">
+          <img src="https://images.unsplash.com/photo-1514565131-fce0801e5785?w=600&q=80" alt="Night lights" loading="lazy" />
+          <div class="caption"><h3>After Dark</h3><span>Neon glow</span></div>
+        </div>
+        <div class="gallery-item wide">
+          <img src="https://images.unsplash.com/photo-1444723121867-7a241cacace9?w=800&q=80" alt="Bridge" loading="lazy" />
+          <div class="caption"><h3>Crossing</h3><span>Architecture</span></div>
+        </div>
+        <div class="gallery-item square">
+          <img src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=600&q=80" alt="Street" loading="lazy" />
+          <div class="caption"><h3>Rush Hour</h3><span>Movement</span></div>
+        </div>
+      </div>
+      <div class="scroll-arrows">
+        <button class="scroll-arrow" data-dir="-1" data-target="gallery1">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 4 L6 8 L10 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <button class="scroll-arrow" data-dir="1" data-target="gallery1">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4 L10 8 L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- Gallery Row 2: Nature / Quiet -->
+    <section class="gallery-section">
+      <div class="gallery-label">Nature & Quiet</div>
+      <div class="gallery-track" id="gallery2">
+        <div class="gallery-item wide">
+          <img src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&q=80" alt="Forest" loading="lazy" />
+          <div class="caption"><h3>Morning Mist</h3><span>Forest walk</span></div>
+        </div>
+        <div class="gallery-item tall">
+          <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&q=80" alt="Trees" loading="lazy" />
+          <div class="caption"><h3>Canopy</h3><span>Looking up</span></div>
+        </div>
+        <div class="gallery-item square">
+          <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600&q=80" alt="Lake" loading="lazy" />
+          <div class="caption"><h3>Still Water</h3><span>Reflection</span></div>
+        </div>
+        <div class="gallery-item wide">
+          <img src="https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=800&q=80" alt="Hills" loading="lazy" />
+          <div class="caption"><h3>Green Rolling</h3><span>Countryside</span></div>
+        </div>
+        <div class="gallery-item tall">
+          <img src="https://images.unsplash.com/photo-1518173946687-a4c05e8365c8?w=600&q=80" alt="Flower" loading="lazy" />
+          <div class="caption"><h3>Macro</h3><span>Tiny details</span></div>
+        </div>
+        <div class="gallery-item square">
+          <img src="https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=600&q=80" alt="Waterfall" loading="lazy" />
+          <div class="caption"><h3>Flow</h3><span>Long exposure</span></div>
+        </div>
+      </div>
+      <div class="scroll-arrows">
+        <button class="scroll-arrow" data-dir="-1" data-target="gallery2">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 4 L6 8 L10 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <button class="scroll-arrow" data-dir="1" data-target="gallery2">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4 L10 8 L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <div class="lens-quote">
+      <blockquote>"The camera is an instrument that teaches people how to see without a camera."</blockquote>
+      <cite>— Dorothea Lange</cite>
+    </div>
+  </main>
+
+  <script>
+    /* ── Draw camera on load ── */
+    const camParts = [
+      { id: 'cam-body',  dur: 800,  delay: 200 },
+      { id: 'cam-lens',  dur: 600,  delay: 500 },
+      { id: 'cam-inner', dur: 400,  delay: 800 },
+      { id: 'cam-vf',    dur: 400,  delay: 600 },
+      { id: 'cam-flash', dur: 400,  delay: 700 },
+      { id: 'cam-btn',   dur: 300,  delay: 900 },
+      { id: 'cam-strap', dur: 600,  delay: 1000 },
+    ];
+
+    camParts.forEach(({ id }) => {
+      const el = document.getElementById(id);
+      const len = el.getTotalLength();
+      el.style.strokeDasharray = len;
+      el.style.strokeDashoffset = len;
+    });
+
+    requestAnimationFrame(() => {
+      camParts.forEach(({ id, dur, delay }) => {
+        setTimeout(() => {
+          const el = document.getElementById(id);
+          el.style.transition = `stroke-dashoffset ${dur}ms cubic-bezier(0.16, 1, 0.3, 1)`;
+          el.style.strokeDashoffset = 0;
+        }, delay);
+      });
+    });
+
+    /* ── Gallery arrow scroll ── */
+    document.querySelectorAll('.scroll-arrow').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const track = document.getElementById(btn.dataset.target);
+        const dir = parseInt(btn.dataset.dir);
+        track.scrollBy({ left: dir * 340, behavior: 'smooth' });
+      });
+    });
+
+    /* ── Drag to scroll galleries ── */
+    document.querySelectorAll('.gallery-track').forEach(track => {
+      let isDown = false, startX, scrollLeft;
+      track.addEventListener('mousedown', e => {
+        isDown = true;
+        startX = e.pageX - track.offsetLeft;
+        scrollLeft = track.scrollLeft;
+      });
+      track.addEventListener('mouseleave', () => isDown = false);
+      track.addEventListener('mouseup', () => isDown = false);
+      track.addEventListener('mousemove', e => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - track.offsetLeft;
+        track.scrollLeft = scrollLeft - (x - startX) * 1.5;
+      });
+    });
+  </script>
+</body>
+</html>

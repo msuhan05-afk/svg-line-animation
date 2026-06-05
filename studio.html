@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Studio — Line World</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="theme.js"></script>
+  <style>
+    .studio-page {
+      min-height: 100vh;
+      padding-top: 5rem;
+    }
+
+    /* ── Hero ── */
+    .studio-hero {
+      text-align: center;
+      padding: 4rem 2rem 2rem;
+    }
+    .studio-hero .label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--amber);
+      margin-bottom: 0.6rem;
+    }
+    .studio-hero h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.8rem;
+    }
+    .studio-hero p {
+      color: var(--dust);
+      font-size: 1.05rem;
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ── 3D viewer ── */
+    .viewer-wrap {
+      max-width: 1000px;
+      margin: 2.5rem auto;
+      padding: 0 2rem;
+    }
+    .viewer {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(237, 232, 208, 0.08);
+      background: var(--graphite);
+    }
+    .viewer iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* loading shimmer before iframe loads */
+    .viewer::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        110deg,
+        var(--graphite) 30%,
+        rgba(237, 232, 208, 0.04) 50%,
+        var(--graphite) 70%
+      );
+      background-size: 200% 100%;
+      animation: shimmer 1.8s ease-in-out infinite;
+      z-index: 1;
+      pointer-events: none;
+      transition: opacity 0.6s;
+    }
+    .viewer.loaded::before { opacity: 0; }
+
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* ── Annotations ── */
+    .studio-details {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 3rem 2rem 5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 2rem;
+    }
+
+    .detail-card {
+      padding: 1.8rem;
+      border: 1px solid rgba(237, 232, 208, 0.06);
+      border-radius: 14px;
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s var(--ease-cinema), transform 0.7s var(--ease-cinema);
+    }
+    .detail-card.in-view {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .detail-card svg {
+      width: 40px;
+      height: 40px;
+      margin-bottom: 1rem;
+    }
+
+    .detail-card h3 {
+      font-size: 1rem;
+      font-weight: 500;
+      margin-bottom: 0.4rem;
+    }
+
+    .detail-card p {
+      font-size: 0.85rem;
+      color: var(--dust);
+      line-height: 1.5;
+    }
+
+    /* ── Stick figure sitting at desk (drawn on load) ── */
+    .studio-figure {
+      display: flex;
+      justify-content: center;
+      padding: 2rem 0 0;
+    }
+    .studio-figure svg {
+      width: 200px;
+      height: auto;
+    }
+
+    /* ── Hotspot annotations overlay ── */
+    .viewer-label {
+      position: absolute;
+      z-index: 5;
+      padding: 0.4rem 0.9rem;
+      background: rgba(10, 10, 10, 0.75);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(237, 232, 208, 0.12);
+      border-radius: 100px;
+      font-size: 0.72rem;
+      color: var(--bone);
+      letter-spacing: 0.04em;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.5s var(--ease-cinema), transform 0.5s var(--ease-cinema);
+    }
+    .viewer.loaded .viewer-label {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/" class="nav-logo">line.</a>
+    <div class="nav-right">
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/about.html">About</a>
+      <a href="/work.html">Work</a>
+      <a href="/studio.html" class="active">Studio</a>
+      <a href="/lens.html">Lens</a>
+      <a href="/films.html">Films</a>
+      <a href="/contact.html">Contact</a>
+    </div>
+    <button class="theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+    </div>
+  </nav>
+
+  <main class="studio-page">
+    <!-- drawn stick figure at desk -->
+    <div class="studio-figure">
+      <svg viewBox="0 0 260 120" fill="none">
+        <!-- desk -->
+        <path class="draw" id="s-desk" d="M 40 85 L 220 85 M 60 85 L 60 110 M 200 85 L 200 110" />
+        <!-- monitor -->
+        <path class="draw" id="s-monitor" d="M 110 45 L 170 45 L 170 80 L 110 80 Z M 140 80 L 140 85" />
+        <!-- screen glow line -->
+        <path class="draw" id="s-screen" d="M 118 55 L 162 55 M 118 63 L 152 63 M 118 71 L 145 71" style="stroke: var(--amber); stroke-width: 2;" />
+        <!-- person sitting -->
+        <path class="draw" id="s-body" d="M 95 85 L 95 60" />
+        <circle class="draw" id="s-head" cx="95" cy="50" r="10" />
+        <circle class="draw" id="s-eye" cx="99" cy="48" r="1.8" />
+        <!-- arms reaching to keyboard -->
+        <path class="draw" id="s-arms" d="M 95 65 C 100 70, 108 78, 115 82 M 95 65 C 90 70, 85 78, 82 82" />
+        <!-- legs -->
+        <path class="draw" id="s-legs" d="M 95 85 L 85 105 M 95 85 L 100 105" />
+        <!-- coffee mug -->
+        <path class="draw" id="s-mug" d="M 185 75 L 185 84 L 195 84 L 195 75 Z M 195 77 C 200 77, 200 82, 195 82" />
+        <!-- plant pot -->
+        <path class="draw" id="s-plant" d="M 55 85 L 55 70 L 65 70 L 65 85 M 60 70 C 55 55, 50 50, 55 42 M 60 70 C 65 55, 70 50, 65 42 M 60 70 C 60 58, 60 50, 60 40" style="stroke: var(--amber);" />
+      </svg>
+    </div>
+
+    <section class="studio-hero">
+      <div class="label">Step Inside</div>
+      <h1>My Studio Space</h1>
+      <p>Where ideas become interfaces. Drag to explore the space — every corner has a story.</p>
+    </section>
+
+    <!-- 3D viewer -->
+    <div class="viewer-wrap">
+      <div class="viewer" id="viewer">
+        <iframe
+          title="My Studio Space"
+          src="https://sketchfab.com/models/6dd7ded0f84648e791729c797c7440c5/embed?autostart=1&ui_theme=dark&ui_infos=0&ui_watermark=0&ui_watermark_link=0"
+          allow="autoplay; fullscreen; xr-spatial-tracking"
+          loading="lazy"
+          id="sketchfab-iframe"
+        ></iframe>
+        <div class="viewer-label" style="top: 18%; left: 12%;">plants</div>
+        <div class="viewer-label" style="top: 30%; right: 15%;">workspace</div>
+        <div class="viewer-label" style="bottom: 25%; left: 20%;">tools</div>
+      </div>
+    </div>
+
+    <!-- Detail cards -->
+    <div class="studio-details">
+      <div class="detail-card" data-anim>
+        <svg viewBox="0 0 40 40" fill="none">
+          <path class="draw-scroll" d="M8 30 L20 10 L32 30 M14 22 L26 22" />
+        </svg>
+        <h3>Design Corner</h3>
+        <p>Figma, Blender, and a sketchbook. Where ideas start as rough shapes before they hit the screen.</p>
+      </div>
+
+      <div class="detail-card" data-anim>
+        <svg viewBox="0 0 40 40" fill="none">
+          <rect class="draw-scroll" x="6" y="8" width="28" height="20" rx="3" />
+          <path class="draw-scroll" d="M6 14 L34 14 M14 20 L26 20 M14 24 L22 24" />
+        </svg>
+        <h3>Code Station</h3>
+        <p>VS Code, Claude, and too many terminal tabs. Next.js, GSAP, and Three.js live here.</p>
+      </div>
+
+      <div class="detail-card" data-anim>
+        <svg viewBox="0 0 40 40" fill="none">
+          <circle class="draw-scroll" cx="20" cy="18" r="10" />
+          <path class="draw-scroll" d="M14 32 C14 26, 26 26, 26 32" />
+        </svg>
+        <h3>Thinking Spot</h3>
+        <p>A quiet corner for research papers, coffee, and staring at the ceiling until the solution arrives.</p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    /* ── Draw the desk figure on load ── */
+    const drawIds = [
+      { id: 's-desk',    dur: 800,  delay: 200 },
+      { id: 's-monitor', dur: 600,  delay: 400 },
+      { id: 's-screen',  dur: 500,  delay: 800 },
+      { id: 's-body',    dur: 400,  delay: 500 },
+      { id: 's-head',    dur: 500,  delay: 700 },
+      { id: 's-eye',     dur: 200,  delay: 1100 },
+      { id: 's-arms',    dur: 500,  delay: 900 },
+      { id: 's-legs',    dur: 400,  delay: 800 },
+      { id: 's-mug',     dur: 400,  delay: 1000 },
+      { id: 's-plant',   dur: 600,  delay: 1100 },
+    ];
+
+    drawIds.forEach(({ id }) => {
+      const el = document.getElementById(id);
+      const len = el.getTotalLength();
+      el.style.strokeDasharray = len;
+      el.style.strokeDashoffset = len;
+    });
+
+    requestAnimationFrame(() => {
+      drawIds.forEach(({ id, dur, delay }) => {
+        const el = document.getElementById(id);
+        setTimeout(() => {
+          el.style.transition = `stroke-dashoffset ${dur}ms cubic-bezier(0.16, 1, 0.3, 1)`;
+          el.style.strokeDashoffset = 0;
+        }, delay);
+      });
+    });
+
+    /* ── Mark viewer loaded when iframe finishes ── */
+    const iframe = document.getElementById('sketchfab-iframe');
+    const viewer = document.getElementById('viewer');
+    iframe.addEventListener('load', () => {
+      setTimeout(() => viewer.classList.add('loaded'), 600);
+    });
+
+    /* ── Scroll reveal for detail cards ── */
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+
+        // draw SVG icons
+        el.querySelectorAll('.draw-scroll').forEach(path => {
+          const len = path.getTotalLength();
+          path.style.strokeDasharray = len;
+          path.style.strokeDashoffset = len;
+          setTimeout(() => {
+            path.style.transition = 'stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
+            path.style.strokeDashoffset = 0;
+          }, 100);
+        });
+
+        el.classList.add('in-view');
+        obs.unobserve(el);
+      });
+    }, { threshold: 0.3 });
+
+    document.querySelectorAll('[data-anim]').forEach(el => obs.observe(el));
+  </script>
+</body>
+</html>
