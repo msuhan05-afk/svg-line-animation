@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Walk Cycle — Line World</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="theme.js"></script>
+  <style>
+    .walk-page {
+      min-height: 100vh;
+      padding-top: 5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .walk-hero {
+      text-align: center;
+      padding: 3rem 2rem 1rem;
+    }
+    .walk-hero .label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--amber);
+      margin-bottom: 0.6rem;
+    }
+    .walk-hero h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.8rem;
+    }
+    .walk-hero p {
+      color: var(--dust);
+      font-size: 1rem;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ── Canvas area ── */
+    .canvas-wrap {
+      width: min(700px, 95vw);
+      aspect-ratio: 7 / 4;
+      position: relative;
+      margin: 2rem 0;
+      border-radius: 20px;
+      border: 1px solid rgba(237,232,208,0.06);
+      background: var(--graphite);
+      overflow: hidden;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* ground line */
+    .canvas-ground {
+      position: absolute;
+      bottom: 15%;
+      left: 5%;
+      width: 90%;
+      height: 1px;
+      background: rgba(237,232,208,0.1);
+    }
+
+    /* ── Controls ── */
+    .controls {
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 0.5rem 2rem 2rem;
+    }
+
+    .ctrl-btn {
+      font: inherit;
+      font-size: 0.82rem;
+      color: var(--dust);
+      background: var(--graphite);
+      border: 1px solid rgba(237,232,208,0.1);
+      padding: 0.5rem 1.2rem;
+      border-radius: 100px;
+      cursor: pointer;
+      transition: all 0.3s var(--ease-cinema);
+    }
+    .ctrl-btn:hover { color: var(--bone); border-color: rgba(237,232,208,0.25); }
+    .ctrl-btn.active { color: var(--ink); background: var(--amber); border-color: var(--amber); }
+
+    .ctrl-label {
+      font-size: 0.75rem;
+      color: var(--dust);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 0 0.5rem;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100px;
+      height: 4px;
+      background: rgba(237,232,208,0.12);
+      border-radius: 2px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      background: var(--amber);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    /* ── Pose breakdown ── */
+    .poses-section {
+      max-width: 700px;
+      padding: 2rem 2rem 4rem;
+      width: 100%;
+    }
+    .poses-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--amber);
+      margin-bottom: 1.2rem;
+    }
+    .poses-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .pose-card {
+      flex: 1;
+      text-align: center;
+      padding: 1.2rem 0.8rem;
+      border: 1px solid rgba(237,232,208,0.06);
+      border-radius: 14px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.7s var(--ease-cinema), transform 0.7s var(--ease-cinema);
+    }
+    .pose-card.in-view { opacity: 1; transform: translateY(0); }
+    .pose-card canvas { width: 80px; height: 120px; margin: 0 auto 0.6rem; }
+    .pose-card h4 { font-size: 0.85rem; font-weight: 500; margin-bottom: 0.2rem; }
+    .pose-card p { font-size: 0.75rem; color: var(--dust); }
+
+    @media (max-width: 640px) {
+      .poses-row { flex-wrap: wrap; }
+      .pose-card { flex: 0 0 calc(50% - 0.5rem); }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/" class="nav-logo">line.</a>
+    <div class="nav-right">
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/about.html">About</a>
+      <a href="/work.html">Work</a>
+      <a href="/studio.html">Studio</a>
+      <a href="/lens.html">Lens</a>
+      <a href="/films.html">Films</a>
+      <a href="/contact.html">Contact</a>
+    </div>
+    <button class="theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+    </div>
+  </nav>
+
+  <main class="walk-page">
+    <section class="walk-hero">
+      <div class="label">Animation Principles</div>
+      <h1>Walk Cycle</h1>
+      <p>A proper walk cycle built on the 4 key poses — contact, down, passing, up.</p>
+    </section>
+
+    <div class="canvas-wrap">
+      <canvas id="walk-canvas"></canvas>
+      <div class="canvas-ground"></div>
+    </div>
+
+    <div class="controls">
+      <span class="ctrl-label">Speed</span>
+      <button class="ctrl-btn" data-bpm="40">Slow</button>
+      <button class="ctrl-btn active" data-bpm="70">Normal</button>
+      <button class="ctrl-btn" data-bpm="120">Fast</button>
+      <button class="ctrl-btn" data-bpm="200">Run</button>
+
+      <span class="ctrl-label" style="margin-left:1rem;">Stroke</span>
+      <input type="range" id="stroke-slider" min="2" max="8" value="4" step="0.5" />
+
+      <span class="ctrl-label" style="margin-left:1rem;">Trail</span>
+      <button class="ctrl-btn" id="trail-toggle">Off</button>
+    </div>
+
+    <!-- Pose breakdown -->
+    <section class="poses-section">
+      <div class="poses-label">The 4 Key Poses</div>
+      <div class="poses-row">
+        <div class="pose-card" data-anim data-pose="0">
+          <canvas width="160" height="240"></canvas>
+          <h4>Contact</h4>
+          <p>Front heel & back toe touch ground</p>
+        </div>
+        <div class="pose-card" data-anim data-pose="0.125">
+          <canvas width="160" height="240"></canvas>
+          <h4>Down</h4>
+          <p>Body at lowest point, weight absorbed</p>
+        </div>
+        <div class="pose-card" data-anim data-pose="0.25">
+          <canvas width="160" height="240"></canvas>
+          <h4>Passing</h4>
+          <p>Legs cross, one foot lifts</p>
+        </div>
+        <div class="pose-card" data-anim data-pose="0.375">
+          <canvas width="160" height="240"></canvas>
+          <h4>Up</h4>
+          <p>Body at highest point, pushing off</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /* ═══════════════════════════════════════════
+       Walk Cycle Engine — Canvas-based
+       Proper animation principles:
+       - Contact / Down / Passing / Up poses
+       - Body bob (vertical translation)
+       - Hip rotation
+       - Arm counter-swing
+       - Head bob
+       - Foot roll
+    ═══════════════════════════════════════════ */
+
+    const canvas = document.getElementById('walk-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let BPM = 70;
+    let STROKE = 4;
+    let showTrail = false;
+    let trailFrames = [];
+
+    function resize() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width * 2;
+      canvas.height = rect.height * 2;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // easing
+    function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+
+    // lerp
+    function lerp(a, b, t) { return a + (b - a) * t; }
+
+    // sin shorthand with phase
+    function osc(t, phase) { return Math.sin((t + phase) * Math.PI * 2); }
+
+    function getColors() {
+      const style = getComputedStyle(document.documentElement);
+      return {
+        bone: style.getPropertyValue('--bone').trim() || '#ede8d0',
+        amber: style.getPropertyValue('--amber').trim() || '#d6a95f',
+        ink: style.getPropertyValue('--ink').trim() || '#0a0a0a',
+      };
+    }
+
+    /* ── Draw a limb segment ── */
+    function drawSeg(ctx, x1, y1, x2, y2, color, width) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+
+    /* ── Draw circle (head / joint) ── */
+    function drawCircle(ctx, x, y, r, color, width, fill) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+      ctx.stroke();
+    }
+
+    /* ── Compute walk pose at time t (0-1 = one full cycle) ── */
+    function getPose(t) {
+      // Body vertical bob: down at 0.125 & 0.625, up at 0.375 & 0.875
+      const bodyBob = -Math.cos(t * Math.PI * 4) * 6;
+
+      // Body lean (slight forward/back)
+      const bodyLean = Math.sin(t * Math.PI * 2) * 2;
+
+      // Hip position
+      const hipY = 0 + bodyBob;
+
+      // ── LEGS ──
+      // Right leg leads at t=0 (contact)
+      const legPhaseR = t;
+      const legPhaseL = (t + 0.5) % 1;
+
+      function getLeg(phase) {
+        // thigh angle swings forward and back
+        const thighAngle = Math.sin(phase * Math.PI * 2) * 35;
+
+        // shin: bends back more during passing (phase ~0.25)
+        const shinBend = Math.max(0, Math.sin(phase * Math.PI * 2 - 0.5)) * 55 +
+                         Math.max(0, Math.sin((phase - 0.2) * Math.PI * 2)) * 15;
+
+        // foot angle (toe-off / heel-strike)
+        const footAngle = Math.sin(phase * Math.PI * 2) * 20 - 5;
+
+        return { thighAngle, shinBend, footAngle };
+      }
+
+      const legR = getLeg(legPhaseR);
+      const legL = getLeg(legPhaseL);
+
+      // ── ARMS (counter-swing) ──
+      const armSwingR = -Math.sin(t * Math.PI * 2) * 40;
+      const armSwingL = Math.sin(t * Math.PI * 2) * 40;
+      const forearmR = Math.min(0, Math.sin(t * Math.PI * 2 + 0.3)) * 30 - 15;
+      const forearmL = Math.min(0, -Math.sin(t * Math.PI * 2 + 0.3)) * 30 - 15;
+
+      // ── HEAD ──
+      const headBob = bodyBob * 0.4;
+      const headTilt = Math.sin(t * Math.PI * 2) * 3;
+
+      return {
+        bodyBob, bodyLean, hipY,
+        legR, legL,
+        armSwingR, armSwingL, forearmR, forearmL,
+        headBob, headTilt
+      };
+    }
+
+    /* ── Render the character ── */
+    function drawCharacter(ctx, cx, groundY, pose, color, strokeW, alpha) {
+      ctx.globalAlpha = alpha;
+      const s = strokeW;
+      const deg = Math.PI / 180;
+
+      // measurements
+      const torsoLen = 70;
+      const thighLen = 55;
+      const shinLen = 50;
+      const footLen = 18;
+      const upperArmLen = 45;
+      const forearmLen = 40;
+      const headR = 22;
+
+      // hip
+      const hipX = cx + pose.bodyLean;
+      const hipY = groundY - 110 + pose.bodyBob;
+
+      // shoulders
+      const shoulderX = hipX - pose.bodyLean * 0.3;
+      const shoulderY = hipY - torsoLen;
+
+      // neck / head
+      const headX = shoulderX;
+      const headY = shoulderY - headR - 8 + pose.headBob;
+
+      // ── Draw legs (back leg first) ──
+      function drawLeg(leg, side) {
+        const thighRad = leg.thighAngle * deg;
+        const kneeX = hipX + Math.sin(thighRad) * thighLen;
+        const kneeY = hipY + Math.cos(thighRad) * thighLen;
+
+        const shinRad = thighRad + leg.shinBend * deg;
+        const ankleX = kneeX + Math.sin(shinRad) * shinLen;
+        const ankleY = kneeY + Math.cos(shinRad) * shinLen;
+
+        const footRad = leg.footAngle * deg;
+        const toeX = ankleX + Math.cos(footRad) * footLen;
+        const toeY = ankleY + Math.sin(footRad) * footLen * 0.3;
+
+        drawSeg(ctx, hipX, hipY, kneeX, kneeY, color, s);
+        drawSeg(ctx, kneeX, kneeY, ankleX, ankleY, color, s);
+        drawSeg(ctx, ankleX, ankleY, toeX, toeY, color, s * 0.8);
+
+        // knee dot
+        drawCircle(ctx, kneeX, kneeY, s * 0.6, color, 1, color);
+      }
+
+      // determine which leg is behind
+      if (pose.legR.thighAngle < pose.legL.thighAngle) {
+        drawLeg(pose.legR, 'R');
+        drawLeg(pose.legL, 'L');
+      } else {
+        drawLeg(pose.legL, 'L');
+        drawLeg(pose.legR, 'R');
+      }
+
+      // ── Torso ──
+      drawSeg(ctx, hipX, hipY, shoulderX, shoulderY, color, s);
+
+      // ── Arms ──
+      function drawArm(swing, forearmBend) {
+        const armRad = swing * deg;
+        const elbowX = shoulderX + Math.sin(armRad) * upperArmLen;
+        const elbowY = shoulderY + Math.cos(armRad) * upperArmLen;
+
+        const fRad = armRad + forearmBend * deg;
+        const handX = elbowX + Math.sin(fRad) * forearmLen;
+        const handY = elbowY + Math.cos(fRad) * forearmLen;
+
+        drawSeg(ctx, shoulderX, shoulderY, elbowX, elbowY, color, s * 0.85);
+        drawSeg(ctx, elbowX, elbowY, handX, handY, color, s * 0.75);
+        drawCircle(ctx, elbowX, elbowY, s * 0.5, color, 1, color);
+      }
+
+      // back arm first
+      if (pose.armSwingR > 0) {
+        drawArm(pose.armSwingR, pose.forearmR);
+        drawArm(pose.armSwingL, pose.forearmL);
+      } else {
+        drawArm(pose.armSwingL, pose.forearmL);
+        drawArm(pose.armSwingR, pose.forearmR);
+      }
+
+      // ── Head ──
+      drawCircle(ctx, headX, headY, headR, color, s, null);
+
+      // eyes (looking right)
+      const eyeOffX = 6;
+      drawCircle(ctx, headX + eyeOffX, headY - 4, 3, color, 1.5, null);
+      drawCircle(ctx, headX + eyeOffX + 10, headY - 4, 3, color, 1.5, null);
+
+      // slight smile
+      ctx.strokeStyle = color;
+      ctx.lineWidth = s * 0.5;
+      ctx.beginPath();
+      ctx.arc(headX + eyeOffX + 5, headY + 2, 7, 0.15 * Math.PI, 0.85 * Math.PI, false);
+      ctx.stroke();
+
+      // hip dot
+      drawCircle(ctx, hipX, hipY, s * 0.7, color, 1, color);
+      // shoulder dot
+      drawCircle(ctx, shoulderX, shoulderY, s * 0.6, color, 1, color);
+
+      ctx.globalAlpha = 1;
+    }
+
+    /* ── Main loop ── */
+    let lastTime = 0;
+    let cyclePos = 0;
+
+    function loop(time) {
+      const dt = (time - lastTime) / 1000;
+      lastTime = time;
+
+      // advance cycle (BPM = steps per minute, 2 steps per cycle)
+      const cyclesPerSec = BPM / 120;
+      cyclePos = (cyclePos + dt * cyclesPerSec) % 1;
+
+      const { bone, amber, ink } = getColors();
+      const w = canvas.width;
+      const h = canvas.height;
+      const groundY = h * 0.82;
+      const cx = w / 2;
+
+      if (showTrail) {
+        // semi-transparent clear for motion blur
+        ctx.fillStyle = ink;
+        ctx.globalAlpha = 0.15;
+        ctx.fillRect(0, 0, w, h);
+        ctx.globalAlpha = 1;
+      } else {
+        ctx.clearRect(0, 0, w, h);
+      }
+
+      // ground line
+      ctx.strokeStyle = bone;
+      ctx.globalAlpha = 0.08;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(w * 0.05, groundY + 5);
+      ctx.lineTo(w * 0.95, groundY + 5);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // shadow
+      ctx.fillStyle = bone;
+      ctx.globalAlpha = 0.06;
+      ctx.beginPath();
+      ctx.ellipse(cx, groundY + 8, 35, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // draw character
+      const pose = getPose(cyclePos);
+      drawCharacter(ctx, cx, groundY, pose, bone, STROKE * 2, 1);
+
+      requestAnimationFrame(loop);
+    }
+
+    requestAnimationFrame((t) => { lastTime = t; loop(t); });
+
+    /* ── Controls ── */
+    document.querySelectorAll('[data-bpm]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        BPM = parseInt(btn.dataset.bpm);
+        document.querySelectorAll('[data-bpm]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    document.getElementById('stroke-slider').addEventListener('input', (e) => {
+      STROKE = parseFloat(e.target.value);
+    });
+
+    document.getElementById('trail-toggle').addEventListener('click', function() {
+      showTrail = !showTrail;
+      this.textContent = showTrail ? 'On' : 'Off';
+      this.classList.toggle('active', showTrail);
+    });
+
+    /* ── Draw static poses in the cards ── */
+    function drawPoseCard(card) {
+      const cvs = card.querySelector('canvas');
+      const pctx = cvs.getContext('2d');
+      const t = parseFloat(card.dataset.pose);
+      const pose = getPose(t);
+      const { bone } = getColors();
+
+      pctx.clearRect(0, 0, cvs.width, cvs.height);
+      drawCharacter(pctx, cvs.width / 2, cvs.height * 0.85, pose, bone, 3, 1);
+    }
+
+    // observe for scroll reveal + draw
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+          drawPoseCard(entry.target);
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.3 });
+
+    document.querySelectorAll('.pose-card').forEach(el => obs.observe(el));
+
+    // redraw pose cards on theme change
+    const themeObs = new MutationObserver(() => {
+      document.querySelectorAll('.pose-card.in-view').forEach(drawPoseCard);
+    });
+    themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  </script>
+</body>
+</html>
